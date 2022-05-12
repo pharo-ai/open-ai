@@ -50,7 +50,7 @@ BaselineOfOpenAI >> setUpPackages: spec [
 	self setUpDeploymentPackages: spec.
 	spec
 		package: 'Open-AI-Model-Tests' with: [ spec requires: #( 'Open-AI-Model' 'Superluminal-SUnit' ) ];
-		group: 'Tests' with: #( 'OpenAI-Model-Tests' );
+		group: 'Tests' with: #( 'Open-AI-Model-Tests' );
 		package: 'Open-AI-Examples' with: [ spec requires: #( 'Deployment' 'Superluminal-Deployment' ) ];
 		group: 'Examples' with: #( 'Open-AI-Examples' )
 ]
