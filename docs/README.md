@@ -1,10 +1,8 @@
 # Open-AI Documentation
 
-What is this thing? “the motto”, the goals, the vision.
+A client for using [Open AI](https://openai.com/) API.
 
 To learn about the project, [install it](how-to/how-to-load-in-pharo.md).
-
-Links to additional documentation.
 
 ---
 
