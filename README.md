@@ -2,7 +2,9 @@
 
 ![Logo](assets/logo.svg)
 
-What is this thing? “the motto”, the goals, the vision.
+Wrapper over [Open AI](https://beta.openai.com/docs/introduction)
+
+This allows other projects to have this one as prerrequisite, invoke the API provided and have Open AI models underneath to solve machine learning tasks.
 
 [![Unit Tests](https://github.com/pharo-ai/Open-AI/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/pharo-ai/Open-AI/actions/workflows/unit-tests.yml/badge.svg)
 [![Coverage Status](https://codecov.io/github/pharo-ai/Open-AI/coverage.svg?branch=release-candidate)](https://codecov.io/gh/pharo-ai/Open-AI/branch/release-candidate)
@@ -13,8 +15,9 @@ What is this thing? “the motto”, the goals, the vision.
 [![Pharo 9.0](https://img.shields.io/badge/Pharo-9.0-informational)](https://pharo.org)
 [![Pharo 10](https://img.shields.io/badge/Pharo-10-informational)](https://pharo.org)
 
-Why would I care about this thing? When to use it? For whom is it designed?
-When not to use it?
+This project offers the features in [Open AI](https://beta.openai.com/docs/introduction) as different API clients for search, completion, classification and question answering. It also provides examples on how to use each of them.
+
+Since [Open AI](https://beta.openai.com/docs/introduction) requires authentication through personal keys provided to [registered users](https://beta.openai.com/signup), you need to provide your own key in order to use it.
 
 ## Quick links
 
