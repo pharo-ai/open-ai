@@ -25,3 +25,4 @@ jobs:
         with:
           name: Unit-Tests-${{matrix.smalltalk}}
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
