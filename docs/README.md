@@ -7,8 +7,8 @@ provided and have Open AI models underneath to solve machine learning tasks.
 
 To learn about the project, [install it](how-to/how-to-load-in-pharo.md).
 
-[Open AI examples](https://beta.openai.com/examples/)
-[Open AI documentation](https://beta.openai.com/docs/introduction)
+- [Open AI examples](https://beta.openai.com/examples/)
+- [Open AI documentation](https://beta.openai.com/docs/introduction)
 
 After you have [signed up]((https://beta.openai.com/signup)), you will be given
 18 USD to spend, with a limit of 3 months since registering to use it.
