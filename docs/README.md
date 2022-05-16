@@ -7,10 +7,16 @@ provided and have Open AI models underneath to solve machine learning tasks.
 
 To learn about the project, [install it](how-to/how-to-load-in-pharo.md).
 
-The project wrapped by this repo offers [examples](https://beta.openai.com/examples/) and [documentation](https://beta.openai.com/docs/introduction), which you should read to understand the features available.
+To better understand the features, check the official:
 
+- [examples](https://beta.openai.com/examples/)
+- [documentation](https://beta.openai.com/docs/introduction)
+
+---
 After you have [signed up]((https://beta.openai.com/signup)), you will be given
 18 USD to spend, with a limit of 3 months since registering to use it.
+
+Keep these links nearby as you set up your project:
 
 - [Your API keys](https://beta.openai.com/account/api-keys)
 - [Balance detail](https://beta.openai.com/account/usage)
