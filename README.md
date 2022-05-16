@@ -7,7 +7,7 @@ A client for using [Open AI](https://beta.openai.com/docs/introduction) API.
 This allows other projects to have this one as prerequisite, invoke the API
 provided and have Open AI models underneath to solve machine learning tasks.
 
-[![Unit Tests](https://github.com/pharo-ai/Open-AI/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/pharo-ai/Open-AI/actions/workflows/unit-tests.yml/badge.svg)
+[![Unit Tests](https://github.com/pharo-ai/Open-AI/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/pharo-ai/Open-AI/actions/workflows/unit-tests.yml)
 [![Coverage Status](https://codecov.io/github/pharo-ai/Open-AI/coverage.svg?branch=release-candidate)](https://codecov.io/gh/pharo-ai/Open-AI/branch/release-candidate)
 [![Baseline Groups](https://github.com/pharo-ai/Open-AI/actions/workflows/loading-groups.yml/badge.svg)](https://github.com/pharo-ai/Open-AI/actions/workflows/loading-groups.yml)
 [![Markdown Lint](https://github.com/pharo-ai/Open-AI/actions/workflows/markdown-lint.yml/badge.svg)](https://github.com/pharo-ai/Open-AI/actions/workflows/markdown-lint.yml)
