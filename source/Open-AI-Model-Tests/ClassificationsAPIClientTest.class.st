@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #private }
-ClassificationsAPIClientTest >> happyFromExamplesResponse [
+ClassificationsAPIClientTest >> happyResponseFromExamples [
 
 	^ self jsonOkResponseWith: '{
    "completion":"cmpl-58uFrJfYP4xe5v5Tykp97LK0g7GAZ",
@@ -34,7 +34,7 @@ ClassificationsAPIClientTest >> happyFromExamplesResponse [
 ]
 
 { #category : #private }
-ClassificationsAPIClientTest >> happyFromFileResponse [
+ClassificationsAPIClientTest >> happyResponseFromFile [
 
 	^ self jsonOkResponseWith: '{
    "completion":"cmpl-58yd1Undy8qAMx2iMQWCa9fuTrf0e",
@@ -83,7 +83,7 @@ ClassificationsAPIClientTest >> testChangeEngineTo [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self
@@ -107,7 +107,7 @@ ClassificationsAPIClientTest >> testChangeSearchEngineTo [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self
@@ -126,7 +126,7 @@ ClassificationsAPIClientTest >> testClassifyGiven [
 	client := ClassificationsAPIClient
 		          accessingAPIsWith: self restfulAPIClient
 		          authenticatedWith: '1234'.
-	self configureHttpClientToRespondWith: self happyFromExamplesResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromExamples.
 
 	answerJSON := client classify: 'the weather is great' given: ( Array
 			                with: #( 'the grass is green' 'happy' )
@@ -149,7 +149,7 @@ ClassificationsAPIClientTest >> testClassifyLookingForExamplesIn [
 	client := ClassificationsAPIClient
 		          accessingAPIsWith: self restfulAPIClient
 		          authenticatedWith: '1234'.
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 
 	answerJSON := client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
@@ -173,7 +173,7 @@ ClassificationsAPIClientTest >> testDefaultEntityWhenUsingExamples [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromExamplesResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromExamples.
 	client classify: 'the weather is great' given: ( Array
 			  with: #( 'the grass is green' 'happy' )
 			  with: #( 'el cielo está lindo' 'happy' )
@@ -202,7 +202,7 @@ ClassificationsAPIClientTest >> testDefaultEntityWhenUsingFile [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self
@@ -222,7 +222,7 @@ ClassificationsAPIClientTest >> testDefaultUrl [
 		          accessingAPIsWith: self restfulAPIClient
 		          authenticatedWith: '1234'.
 	self httpClient whenSend: #url: evaluate: [ :urlReceived | url := urlReceived ].
-	self configureHttpClientToRespondWith: self happyFromExamplesResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromExamples.
 
 	client classify: 'the weather is great' given: ( Array
 			  with: #( 'the grass is green' 'happy' )
@@ -245,7 +245,7 @@ ClassificationsAPIClientTest >> testFromExamplesMatchBest [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self
@@ -270,7 +270,7 @@ ClassificationsAPIClientTest >> testIncludeMetadata [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self
@@ -295,7 +295,7 @@ ClassificationsAPIClientTest >> testLabelAsOneOf [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self
@@ -320,7 +320,7 @@ ClassificationsAPIClientTest >> testRaisingTemperatureTo [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	self configureHttpClientToRespondWith: self happyResponseFromFile.
 	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
 
 	self

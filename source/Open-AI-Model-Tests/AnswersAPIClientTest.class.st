@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #private }
-AnswersAPIClientTest >> europeFromDocumentsResponse [
+AnswersAPIClientTest >> europeResponseFromDocuments [
 
 	^ self jsonOkResponseWith: '{
    "answers":[
@@ -33,7 +33,7 @@ AnswersAPIClientTest >> europeFromDocumentsResponse [
 ]
 
 { #category : #private }
-AnswersAPIClientTest >> europeFromFileResponse [
+AnswersAPIClientTest >> europeResponseFromFile [
 
 	^ self jsonOkResponseWith: '{
    "answers":[
@@ -69,7 +69,7 @@ AnswersAPIClientTest >> testAnswerAgainstGivenWithin [
 	| client answerJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 
 	answerJSON := client
 		              answer: 'where is France?'
@@ -91,7 +91,7 @@ AnswersAPIClientTest >> testAnswerQueryingGivenWithin [
 	| client answerJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
-	self configureHttpClientToRespondWith: self europeFromFileResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromFile.
 
 	answerJSON := client
 		              answer: 'where is France?'
@@ -120,7 +120,7 @@ AnswersAPIClientTest >> testChangeEngineTo [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 	client
 		answer: 'where is France?'
 		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
@@ -150,7 +150,7 @@ AnswersAPIClientTest >> testChangeSearchEngineTo [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 	client
 		answer: 'where is France?'
 		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
@@ -179,7 +179,7 @@ AnswersAPIClientTest >> testDefaultEntityWhenUsingDocuments [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 	client
 		answer: 'where is France?'
 		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
@@ -208,7 +208,7 @@ AnswersAPIClientTest >> testDefaultEntityWhenUsingFile [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromFileResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromFile.
 	client
 		answer: 'where is France?'
 		querying: 'fileID'
@@ -236,7 +236,7 @@ AnswersAPIClientTest >> testDefaultHeaders [
 	self httpClient
 		whenSend: #headerAt:put:
 		evaluate: [ :header :value | headers at: header put: value ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 
 	client
 		answer: 'where is France?'
@@ -254,7 +254,7 @@ AnswersAPIClientTest >> testDefaultUrl [
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	self httpClient whenSend: #url: evaluate: [ :urlReceived | url := urlReceived ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 
 	client
 		answer: 'where is France?'
@@ -276,7 +276,7 @@ AnswersAPIClientTest >> testIncludeMetadata [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 	client
 		answer: 'where is France?'
 		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
@@ -307,7 +307,7 @@ AnswersAPIClientTest >> testReturnUpTo [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 	client
 		answer: 'where is France?'
 		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
@@ -338,7 +338,7 @@ AnswersAPIClientTest >> testStopAt [
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
-	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
+	self configureHttpClientToRespondWith: self europeResponseFromDocuments.
 	client
 		answer: 'where is France?'
 		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
