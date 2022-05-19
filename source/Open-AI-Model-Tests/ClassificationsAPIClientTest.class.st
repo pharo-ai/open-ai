@@ -71,6 +71,54 @@ ClassificationsAPIClientTest >> restfulAPIClient [
 ]
 
 { #category : #tests }
+ClassificationsAPIClientTest >> testChangeEngineTo [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	client changeEngineTo: 'davinci'.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'davinci';
+		assert: entityContentsJSON keys size equals: 4
+]
+
+{ #category : #tests }
+ClassificationsAPIClientTest >> testChangeSearchEngineTo [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	client changeSearchEngineTo: 'davinci'.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'davinci';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: entityContentsJSON keys size equals: 4
+]
+
+{ #category : #tests }
 ClassificationsAPIClientTest >> testClassifyGiven [
 
 	| client answerJSON |
@@ -114,6 +162,58 @@ ClassificationsAPIClientTest >> testClassifyLookingForExamplesIn [
 ]
 
 { #category : #tests }
+ClassificationsAPIClientTest >> testDefaultEntityWhenUsingExamples [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromExamplesResponse.
+	client classify: 'the weather is great' given: ( Array
+			  with: #( 'the grass is green' 'happy' )
+			  with: #( 'el cielo está lindo' 'happy' )
+			  with: #( 'the soil is rotten' 'sad' ) ).
+
+	self
+		assert: entityContentsJSON query equals: 'the weather is great';
+		assert: entityContentsJSON examples equals: ( Array
+				  with: #( 'the grass is green' 'happy' )
+				  with: #( 'el cielo está lindo' 'happy' )
+				  with: #( 'the soil is rotten' 'sad' ) );
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: entityContentsJSON keys size equals: 4
+]
+
+{ #category : #tests }
+ClassificationsAPIClientTest >> testDefaultEntityWhenUsingFile [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: entityContentsJSON keys size equals: 4
+]
+
+{ #category : #tests }
 ClassificationsAPIClientTest >> testDefaultUrl [
 
 	| client url |
@@ -130,4 +230,104 @@ ClassificationsAPIClientTest >> testDefaultUrl [
 			  with: #( 'the soil is rotten' 'sad' ) ).
 
 	self assert: url equals: 'https://api.openai.com/v1/classifications' asUrl
+]
+
+{ #category : #tests }
+ClassificationsAPIClientTest >> testFromExamplesMatchBest [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	client fromExamplesMatchBest: 2.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: ( entityContentsJSON at: #max_examples ) equals: 2;
+		assert: entityContentsJSON keys size equals: 5
+]
+
+{ #category : #tests }
+ClassificationsAPIClientTest >> testIncludeMetadata [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	client includeMetadata.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: ( entityContentsJSON at: #return_metadata );
+		assert: entityContentsJSON keys size equals: 5
+]
+
+{ #category : #tests }
+ClassificationsAPIClientTest >> testLabelAsOneOf [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	client labelAsOneOf: #( 'Positive' 'Negative' ).
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: entityContentsJSON labels equals: #( 'Positive' 'Negative' );
+		assert: entityContentsJSON keys size equals: 5
+]
+
+{ #category : #tests }
+ClassificationsAPIClientTest >> testRaisingTemperatureTo [
+
+	| client entityContentsJSON |
+
+	client := ClassificationsAPIClient
+		          accessingAPIsWith: self restfulAPIClient
+		          authenticatedWith: '1234'.
+	client raisingTemperatureTo: 0.9.
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self happyFromFileResponse.
+	client classify: 'movie is very good' lookingForExamplesIn: 'fileID'.
+
+	self
+		assert: entityContentsJSON query equals: 'movie is very good';
+		assert: entityContentsJSON file equals: 'fileID';
+		assert: ( entityContentsJSON at: #search_model ) equals: 'ada';
+		assert: entityContentsJSON model equals: 'ada';
+		assert: entityContentsJSON temperature equals: 0.9;
+		assert: entityContentsJSON keys size equals: 5
 ]
