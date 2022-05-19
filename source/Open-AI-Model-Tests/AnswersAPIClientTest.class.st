@@ -112,7 +112,7 @@ AnswersAPIClientTest >> testAnswerQueryingGivenWithin [
 { #category : #tests }
 AnswersAPIClientTest >> testChangeEngineTo [
 
-	| client answerJSON entityContentsJSON |
+	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	client changeEngineTo: 'davinci'.
@@ -121,12 +121,11 @@ AnswersAPIClientTest >> testChangeEngineTo [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
@@ -143,7 +142,7 @@ AnswersAPIClientTest >> testChangeEngineTo [
 { #category : #tests }
 AnswersAPIClientTest >> testChangeSearchEngineTo [
 
-	| client answerJSON entityContentsJSON |
+	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	client changeSearchEngineTo: 'davinci'.
@@ -152,12 +151,11 @@ AnswersAPIClientTest >> testChangeSearchEngineTo [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
@@ -182,12 +180,11 @@ AnswersAPIClientTest >> testDefaultEntityWhenUsingDocuments [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
@@ -204,7 +201,7 @@ AnswersAPIClientTest >> testDefaultEntityWhenUsingDocuments [
 { #category : #tests }
 AnswersAPIClientTest >> testDefaultEntityWhenUsingFile [
 
-	| client answerJSON entityContentsJSON |
+	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	self httpClient
@@ -212,12 +209,11 @@ AnswersAPIClientTest >> testDefaultEntityWhenUsingFile [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromFileResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              querying: 'fileID'
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		querying: 'fileID'
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
@@ -272,7 +268,7 @@ AnswersAPIClientTest >> testDefaultUrl [
 { #category : #tests }
 AnswersAPIClientTest >> testIncludeMetadata [
 
-	| client answerJSON entityContentsJSON |
+	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	client includeMetadata.
@@ -281,12 +277,11 @@ AnswersAPIClientTest >> testIncludeMetadata [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
@@ -304,7 +299,7 @@ AnswersAPIClientTest >> testIncludeMetadata [
 { #category : #tests }
 AnswersAPIClientTest >> testReturnUpTo [
 
-	| client answerJSON entityContentsJSON |
+	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	client returnUpTo: 10.
@@ -313,12 +308,11 @@ AnswersAPIClientTest >> testReturnUpTo [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
@@ -336,7 +330,7 @@ AnswersAPIClientTest >> testReturnUpTo [
 { #category : #tests }
 AnswersAPIClientTest >> testStopAt [
 
-	| client answerJSON entityContentsJSON |
+	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	client stopAt: #( '\n' '<|endoftext|>' ).
@@ -345,12 +339,11 @@ AnswersAPIClientTest >> testStopAt [
 		evaluate: [ :entityReceived | 
 		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
 	self configureHttpClientToRespondWith: self europeFromDocumentsResponse.
-
-	answerJSON := client
-		              answer: 'where is France?'
-		              against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		              given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		              within: 'this car is 2 meters long'.
+	client
+		answer: 'where is France?'
+		against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		within: 'this car is 2 meters long'.
 
 	self
 		assert: entityContentsJSON question equals: 'where is France?';
