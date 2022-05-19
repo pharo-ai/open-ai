@@ -131,26 +131,6 @@ OpenAITasks >> removeFileIdentifiedBy: aFileId [
 ]
 
 { #category : #processing }
-OpenAITasks >> retrieveContentsUnder: aFileId [
-
-	| apiClient response |
-
-	apiClient := FilesAPIClient authenticatedWith: self apiKey.
-	response := apiClient retrieveContentsUnder: aFileId.
-	^ response
-]
-
-{ #category : #processing }
-OpenAITasks >> retrieveFileIdentifiedBy: aFileId [
-
-	| apiClient response |
-
-	apiClient := FilesAPIClient authenticatedWith: self apiKey.
-	response := apiClient retrieveFileIdentifiedBy: aFileId.
-	^ response
-]
-
-{ #category : #processing }
 OpenAITasks >> search: aQuery against: aDocumentCollection [
 
 	| apiClient response sortedResults |

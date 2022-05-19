@@ -48,15 +48,7 @@ FilesAPIClient >> removeFileIdentifiedBy: aFileId [
 		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
 ]
 
-{ #category : #processing }
-FilesAPIClient >> retrieveContentsUnder: aFileId [
-
-	^ client getAt: self serviceUrl / aFileId / 'content'
-		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
-		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
-]
-
-{ #category : #processing }
+{ #category : #'private - processing' }
 FilesAPIClient >> retrieveFileIdentifiedBy: aFileId [
 
 	^ client getAt: self serviceUrl / aFileId
@@ -70,7 +62,7 @@ FilesAPIClient >> serviceUrl [
 	^ self openAIUrl / self endpoint
 ]
 
-{ #category : #processing }
+{ #category : #'private - processing' }
 FilesAPIClient >> upload: aFileReference intendedFor: aPurpose [
 
 	^ client

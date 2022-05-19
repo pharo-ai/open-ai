@@ -91,7 +91,7 @@ SearchAPIClientTest >> restfulAPIClient [
 { #category : #tests }
 SearchAPIClientTest >> testChangeEngineTo [
 
-	| client url documents |
+	| client url |
 
 	client := SearchAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
 	client changeEngineTo: 'davinci'.
