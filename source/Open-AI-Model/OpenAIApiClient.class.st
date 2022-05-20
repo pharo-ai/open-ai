@@ -14,12 +14,6 @@ OpenAIApiClient class >> accessingAPIsWith: apiClient authenticatedWith: anAPIKe
 	^ self new initializeAccessingAPIsWith: apiClient authenticatedWith: anAPIKey
 ]
 
-{ #category : #'instance creation' }
-OpenAIApiClient class >> authenticatedWith: anAPIKey [
-
-	^ self accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory authenticatedWith: anAPIKey
-]
-
 { #category : #testing }
 OpenAIApiClient class >> isAbstract [
 

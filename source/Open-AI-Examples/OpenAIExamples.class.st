@@ -14,7 +14,8 @@ OpenAIExamples >> answers [
 		            against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
 		            given: ( Array with: #( 'how long is this car' '2 meters' ) )
 		            within: 'this car is 2 meters long'.
-	^ response at: 'answers'
+
+	^ self cleanDelimitersFrom: ( response at: 'answers' )
 ]
 
 { #category : #'private - accessing' }
@@ -25,7 +26,6 @@ OpenAIExamples >> answersAPIClient [
 	apiClient := AnswersAPIClient
 		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
 		             authenticatedWith: self apiKey.
-
 	apiClient
 		changeEngineTo: 'ada';
 		changeSearchEngineTo: 'ada';
@@ -56,7 +56,7 @@ OpenAIExamples >> answersFromFile [
 		            given: ( Array with: #( 'how long is this car' '2 meters' ) )
 		            within: 'this car is 2 meters long'.
 
-	^ ( response at: 'answers' ) collect: [ :answer | ( answer substrings: '===' ) first trimBoth ]
+	^ self cleanDelimitersFrom: ( response at: 'answers' )
 ]
 
 { #category : #'private - accessing' }
@@ -68,79 +68,138 @@ OpenAIExamples >> apiKey [
 { #category : #accessing }
 OpenAIExamples >> classifications [
 
-	^ OpenAITasks new classify: 'the weather is great'
-		  asOneOf: #( 'happy' 'sad' )
-		  given: ( Array with: #( 'the grass is green' 'happy' )
-				    with: #( 'el cielo está lindo' 'happy' )
-				    with: #( 'the soil is rotten' 'sad' ) )
+	| apiClient response |
+
+	apiClient := self classificationsAPIClient.
+	apiClient labelAsOneOf: #( 'happy' 'sad' ).
+	
+	response := apiClient classify: 'the weather is great' given: ( Array
+			              with: #( 'the grass is green' 'happy' )
+			              with: #( 'el cielo está lindo' 'happy' )
+			              with: #( 'the soil is rotten' 'sad' ) ).
+	^ response at: 'label'
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> classificationsAPIClient [
+
+	| apiClient |
+
+	apiClient := ClassificationsAPIClient
+		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		             authenticatedWith: self apiKey.
+	apiClient
+		changeEngineTo: 'ada';
+		changeSearchEngineTo: 'ada'.
+
+	^ apiClient
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> classificationsFileId [
+
+	^ self idForFileNamed: 'open-ai/classifications-example.jsonl' intendedFor: 'classifications'
 ]
 
 { #category : #accessing }
 OpenAIExamples >> classificationsFromFile [
 
-	| id |
+	| id apiClient response |
 
-	id := self idForFileNamed: 'inputs/classification-example.jsonl' intendedFor: 'classifications'.
+	id := self classificationsFileId.
 
-	^ OpenAITasks new classify: 'movie is very good'
-		  asOneOf: #( 'Positive' 'Negative' )
-		  lookingForBest: 2
-		  examplesIn: id
+	apiClient := self classificationsAPIClient.
+	apiClient
+		labelAsOneOf: #( 'Positive' 'Negative' );
+		fromExamplesMatchBest: 2.
+
+	response := apiClient classify: 'movie is very good' lookingForExamplesIn: id.
+	^ response at: 'label'
 ]
 
 { #category : #accessing }
 OpenAIExamples >> classificationsFromFileWithoutLabels [
 
-	| id |
+	| id apiClient response |
 
-	id := self idForFileNamed: 'inputs/classification-example.jsonl' intendedFor: 'classifications'.
+	id := self classificationsFileId.
 
-	^ OpenAITasks new classify: 'movie is very good' lookingForBest: 2 examplesIn: id
+	apiClient := self classificationsAPIClient.
+	apiClient fromExamplesMatchBest: 2.
+
+	response := apiClient classify: 'movie is very good' lookingForExamplesIn: id.
+	^ response at: 'label'
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> cleanDelimitersFrom: anAnswerCollection [
+
+	^ anAnswerCollection collect: [ :answer | ( answer substrings: '===' ) first trimBoth ]
 ]
 
 { #category : #accessing }
 OpenAIExamples >> completions [
 
-	^ OpenAITasks new complete: 'This is the day'
+	| apiClient seedText response |
+
+	apiClient := self completionsAPIClient.
+	apiClient changeMaximumNumberOfTokensTo: 1.
+	seedText := 'This is the day'.
+
+	response := apiClient complete: seedText.
+
+	^ '<1s><2s>' expandMacrosWith: seedText with: ( ( response at: 'choices' ) first at: 'text' )
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> completionsAPIClient [
+
+	| apiClient |
+
+	apiClient := CompletionsAPIClient
+		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		             authenticatedWith: self apiKey.
+	apiClient changeEngineTo: 'ada'.
+
+	^ apiClient
 ]
 
 { #category : #accessing }
 OpenAIExamples >> deleteAllFiles [
 
-	"ONLY FOR CLEANUP PURPOSES
-	| files |
-	files := OpenAITasks new listFiles.
-	files data collect: [ :file | OpenAITasks new removeFileIdentifiedBy: file id ]
-	"
+	"Use with extreme caution!"
 
-	
+	| apiClient |
+
+	apiClient := self filesAPIClient.
+	^ apiClient listFiles data collect: [ :file | apiClient removeFileIdentifiedBy: file id ]
 ]
 
 { #category : #accessing }
 OpenAIExamples >> downloadAndRemoveFile [
 
+	"All attempts at downloading give the same 400 error:
+	Not allowed to download files of purpose: <THE PURPOSE SENT>"
+
 	| id |
 
-	id := self idForFileNamed: 'inputs/file-that-will-be-deleted.jsonl' intendedFor: 'fine-tune'
-	 "All attempts at downloading give the same 400 error:
-	Not allowed to download files of purpose: <THE PURPOSE SENT>
-	contents := OpenAITasks new retrieveContentsUnder: id.".
-	^ OpenAITasks new removeFileIdentifiedBy: id
+	id := self idForFileNamed: 'open-ai/file-that-will-be-deleted.jsonl' intendedFor: 'fine-tune'.
+	^ self filesAPIClient removeFileIdentifiedBy: id
 ]
 
 { #category : #accessing }
 OpenAIExamples >> files [
 
-	| files |
+	| apiClient files |
 
-	files := OpenAITasks new listFiles.
+	apiClient := self filesAPIClient.
+	files := apiClient listFiles.
 	^ files data
 		  ifEmpty: [ 
-			  OpenAITasks new
-				  upload: 'inputs/answers-example.jsonl' asFileReference intendedFor: 'answers';
-				  upload: 'inputs/classification-example.jsonl' asFileReference intendedFor: 'classifications';
-				  upload: 'inputs/fine-tune-example.jsonl' asFileReference intendedFor: 'fine-tune';
-				  upload: 'inputs/search-example.jsonl' asFileReference intendedFor: 'search'
+			  Array with: ( apiClient
+					    idForProcessed: 'open-ai/fine-tune-example.jsonl' asFileReference
+					    intendedFor: 'fine-tune'
+					    waiting: 4 seconds )
 			  ]
 		  ifNotEmpty: [ files ]
 ]
@@ -172,19 +231,50 @@ OpenAIExamples >> idForFileNamed: aName intendedFor: aPurpose [
 { #category : #accessing }
 OpenAIExamples >> search [
 
-	^ OpenAITasks new search: 'bulldog' against: #( cat dog car building vehicle person )
+	| documents response |
+
+	documents := #( cat dog car building vehicle person ).
+	response := self searchAPIClient search: 'bulldog' against: documents.
+	
+	^ ( self sortByScoreDataIn: response ) collect: [ :result | 
+		  documents at: ( result at: 'document' ) + 1 ]
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> searchAPIClient [
+
+	| apiClient |
+
+	apiClient := SearchAPIClient
+		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		             authenticatedWith: self apiKey.
+	apiClient changeEngineTo: 'ada'.
+
+	^ apiClient
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> searchFileId [
+
+	^ self idForFileNamed: 'open-ai/search-example.jsonl' intendedFor: 'search'
 ]
 
 { #category : #accessing }
 OpenAIExamples >> searchFromFile [
 
-	| id |
+	| id apiClient response |
 
-	id := self idForFileNamed: 'inputs/search-example.jsonl' intendedFor: 'search'.
+	id := self searchFileId.
 
-	^ OpenAITasks new
-		  search: 'the dog feels happy in a building where some person lives'
-		  returningUpTo: 5
-		  from: id
-		  includeMetadata: false
+	apiClient := self searchAPIClient.
+	apiClient returnUpTo: 5.
+
+	response := apiClient search: 'the dog feels happy in a building where some person lives' in: id.
+	^ ( self sortByScoreDataIn: response ) collect: [ :result | result text ]
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> sortByScoreDataIn: response [
+
+	^ ( response at: 'data' ) sorted: [ :a :b | ( a at: 'score' ) >= ( b at: 'score' ) ]
 ]
