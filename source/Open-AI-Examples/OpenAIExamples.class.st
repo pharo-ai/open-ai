@@ -7,24 +7,62 @@ Class {
 { #category : #accessing }
 OpenAIExamples >> answers [
 
-	^ OpenAITasks new answer: 'where is France?'
-		  against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
-		  given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		  within: 'this car is 2 meters long'
+	| response |
+
+	response := self answersAPIClient
+		            answer: 'where is France?'
+		            against: #( 'France is in Europe' 'Canada is in America' 'Japan is in Asia' )
+		            given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		            within: 'this car is 2 meters long'.
+	^ response at: 'answers'
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> answersAPIClient [
+
+	| apiClient |
+
+	apiClient := AnswersAPIClient
+		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		             authenticatedWith: self apiKey.
+
+	apiClient
+		changeEngineTo: 'ada';
+		changeSearchEngineTo: 'ada';
+		stopAt: #( '\n' '<|endoftext|>' ).
+
+	^ apiClient
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> answersFileId [
+
+	^ self idForFileNamed: 'open-ai/answers-example.jsonl' intendedFor: 'answers'
 ]
 
 { #category : #accessing }
 OpenAIExamples >> answersFromFile [
 
-	| id |
+	| id apiClient response |
 
-	id := self idForFileNamed: 'inputs/answers-example.jsonl' intendedFor: 'answers'.
+	id := self answersFileId.
 
-	^ OpenAITasks new answer: 'where is France?'
-		  returningUpTo: 5
-		  from: id
-		  given: ( Array with: #( 'how long is this car' '2 meters' ) )
-		  within: 'this car is 2 meters long'
+	apiClient := self answersAPIClient.
+	apiClient returnUpTo: 5.
+
+	response := apiClient
+		            answer: 'where is France?'
+		            querying: id
+		            given: ( Array with: #( 'how long is this car' '2 meters' ) )
+		            within: 'this car is 2 meters long'.
+
+	^ ( response at: 'answers' ) collect: [ :answer | ( answer substrings: '===' ) first trimBoth ]
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> apiKey [
+
+	^ 'open-ai/apikey.secret' asFileReference contents
 ]
 
 { #category : #accessing }
@@ -108,17 +146,27 @@ OpenAIExamples >> files [
 ]
 
 { #category : #'private - accessing' }
+OpenAIExamples >> filesAPIClient [
+
+	^ FilesAPIClient
+		  accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		  authenticatedWith: self apiKey
+]
+
+{ #category : #'private - accessing' }
 OpenAIExamples >> idForFileNamed: aName intendedFor: aPurpose [
 
-	| fileName files tasks |
+	| fileName filesAPIClient files |
 
 	fileName := aName asFileReference basename.
-	tasks := OpenAITasks new.
-	files := tasks listFiles.
+	filesAPIClient := self filesAPIClient.
+	files := filesAPIClient listFiles.
+	
 	^ files data
 		  detect: [ :file | file filename = fileName ]
 		  ifFound: [ :file | file id ]
-		  ifNone: [ tasks idForProcessed: aName asFileReference intendedFor: aPurpose waiting: 4 seconds ]
+		  ifNone: [ 
+		  filesAPIClient idForProcessed: aName asFileReference intendedFor: aPurpose waiting: 4 seconds ]
 ]
 
 { #category : #accessing }

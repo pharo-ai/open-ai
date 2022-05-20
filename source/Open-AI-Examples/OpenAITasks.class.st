@@ -5,47 +5,6 @@ Class {
 }
 
 { #category : #processing }
-OpenAITasks >> answer: aQuestion against: aDocumentCollection given: exampleCollection within: anExampleContext [
-
-	| apiClient response |
-
-	apiClient := AnswersAPIClient authenticatedWith: self apiKey.
-	apiClient
-		changeEngineTo: 'ada';
-		changeSearchEngineTo: 'ada';
-		stopAt: #( '\n' '<|endoftext|>' ).
-	response := apiClient answer: aQuestion
-		            against: aDocumentCollection
-		            given: exampleCollection
-		            within: anExampleContext.
-	^ response at: 'answers'
-]
-
-{ #category : #processing }
-OpenAITasks >> answer: aQuestion returningUpTo: aNumber from: aFileId given: exampleCollection within: anExampleContext [
-
-	| apiClient response |
-
-	apiClient := AnswersAPIClient authenticatedWith: self apiKey.
-	apiClient
-		changeEngineTo: 'ada';
-		changeSearchEngineTo: 'ada';
-		stopAt: #( '\n' '<|endoftext|>' );
-		returnUpTo: aNumber.
-	response := apiClient answer: aQuestion
-		            querying: aFileId
-		            given: exampleCollection
-		            within: anExampleContext.
-	^ ( response at: 'answers' ) collect: [ :answer | ( answer substrings: '===' ) first trimBoth ]
-]
-
-{ #category : #'private - accessing' }
-OpenAITasks >> apiKey [
-
-	^ 'inputs/apikey.secret' asFileReference contents
-]
-
-{ #category : #processing }
 OpenAITasks >> classify: aString asOneOf: labelCollection given: exampleCollection [
 
 	| apiClient response |
@@ -101,15 +60,6 @@ OpenAITasks >> complete: aString [
 	^ '<1s><2s>' expandMacrosWith: aString with: ( ( response at: 'choices' ) first at: 'text' )
 ]
 
-{ #category : #'private - processing' }
-OpenAITasks >> ensureJsonLinesTypeIsKnown [
-
-	| extensionsMap |
-
-	extensionsMap := ZnMimeType extensionsMap.
-	extensionsMap at: 'jsonl' ifAbsentPut: [ ZnMimeType applicationOctetStream ]
-]
-
 { #category : #processing }
 OpenAITasks >> listFiles [
 
@@ -162,7 +112,6 @@ OpenAITasks >> upload: aFile intendedFor: aPurpose [
 
 	| apiClient response |
 
-	self ensureJsonLinesTypeIsKnown.
 	apiClient := FilesAPIClient authenticatedWith: self apiKey.
 	response := apiClient upload: aFile intendedFor: aPurpose.
 	^ response at: 'id'

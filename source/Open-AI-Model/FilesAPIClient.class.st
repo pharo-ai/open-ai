@@ -4,22 +4,20 @@ Class {
 	#category : #'Open-AI-Model'
 }
 
+{ #category : #'class initialization' }
+FilesAPIClient class >> initialize [
+
+	<ignoreForCoverage>
+	| extensionsMap |
+
+	extensionsMap := ZnMimeType extensionsMap.
+	extensionsMap at: 'jsonl' ifAbsentPut: [ ZnMimeType applicationOctetStream ]
+]
+
 { #category : #'private - accessing' }
 FilesAPIClient >> endpoint [
 
 	^ 'files'
-]
-
-{ #category : #'private - accessing' }
-FilesAPIClient >> filesParameterToUpload: aFile intendedFor: aPurpose [
-
-	| parameters |
-
-	parameters := Dictionary new
-		              at: 'purpose' put: aPurpose;
-		              at: 'file' put: ( '@<1s>' expandMacrosWith: aFile basename );
-		              yourself.
-	^ parameters
 ]
 
 { #category : #processing }
