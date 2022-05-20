@@ -4,22 +4,20 @@ Class {
 	#category : #'Open-AI-Model'
 }
 
+{ #category : #'class initialization' }
+FilesAPIClient class >> initialize [
+
+	<ignoreForCoverage>
+	| extensionsMap |
+
+	extensionsMap := ZnMimeType extensionsMap.
+	extensionsMap at: 'jsonl' ifAbsentPut: [ ZnMimeType applicationOctetStream ]
+]
+
 { #category : #'private - accessing' }
 FilesAPIClient >> endpoint [
 
 	^ 'files'
-]
-
-{ #category : #'private - accessing' }
-FilesAPIClient >> filesParameterToUpload: aFile intendedFor: aPurpose [
-
-	| parameters |
-
-	parameters := Dictionary new
-		              at: 'purpose' put: aPurpose;
-		              at: 'file' put: ( '@<1s>' expandMacrosWith: aFile basename );
-		              yourself.
-	^ parameters
 ]
 
 { #category : #processing }
@@ -48,15 +46,7 @@ FilesAPIClient >> removeFileIdentifiedBy: aFileId [
 		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
 ]
 
-{ #category : #processing }
-FilesAPIClient >> retrieveContentsUnder: aFileId [
-
-	^ client getAt: self serviceUrl / aFileId / 'content'
-		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
-		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
-]
-
-{ #category : #processing }
+{ #category : #'private - processing' }
 FilesAPIClient >> retrieveFileIdentifiedBy: aFileId [
 
 	^ client getAt: self serviceUrl / aFileId
@@ -70,7 +60,7 @@ FilesAPIClient >> serviceUrl [
 	^ self openAIUrl / self endpoint
 ]
 
-{ #category : #processing }
+{ #category : #'private - processing' }
 FilesAPIClient >> upload: aFileReference intendedFor: aPurpose [
 
 	^ client
