@@ -195,11 +195,11 @@ OpenAIExamples >> createAnswersExampleFile [
 { #category : #'private - processing' }
 OpenAIExamples >> createClassificationsExampleFile [
 
-	self classificationsExampleFileReference writeStreamDo: [ :stream | 
-		stream nextPutAll:
+	self
+		write:
 			'{"text": "good film, but very glum.", "label": "Positive", "metadata": {"source":"example.com"}}
 {"text": "i sympathize with the plight of these families, but the movie doesn''t do a very good job conveying the issue at hand.", "label": "Negative", "metadata": {"source":"example.com"}}'
-		]
+		to: self classificationsExampleFileReference
 ]
 
 { #category : #'private - processing' }
@@ -211,28 +211,30 @@ OpenAIExamples >> createExamplesDirectory [
 { #category : #'private - processing' }
 OpenAIExamples >> createFileThatWillBeDeleted [
 
-	self fileThatWillBeDeletedReference writeStreamDo: [ :stream | 
-		stream nextPutAll: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}' ]
+	self
+		write: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}'
+		to: self fileThatWillBeDeletedReference
 ]
 
 { #category : #'private - processing' }
 OpenAIExamples >> createFineTuneExampleFile [
 
-	self fineTuneExampleFileReference writeStreamDo: [ :stream | 
-		stream nextPutAll: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}' ]
+	self
+		write: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}'
+		to: self fineTuneExampleFileReference
 ]
 
 { #category : #'private - processing' }
 OpenAIExamples >> createSearchExampleFile [
 
-	self searchExampleFileReference writeStreamDo: [ :stream | 
-		stream nextPutAll: '{"text": "a cat is happy", "metadata": "a type of feline"}
+	self
+		write: '{"text": "a cat is happy", "metadata": "a type of feline"}
 {"text": "a dog is hungry", "metadata": "a type of canine"}
 {"text": "a car is loud", "metadata": "a type of vehicle"}
 {"text": "a building is tall", "metadata": "a type of location"}
 {"text": "a vehicle is fast", "metadata": "a type of transport"}
 {"text": "a person is smart", "metadata": "a type of sentient being"}'
-		]
+		to: self searchExampleFileReference
 ]
 
 { #category : #accessing }
@@ -325,7 +327,7 @@ OpenAIExamples >> idForFileNamed: aFileReference intendedFor: aPurpose [
 		  detect: [ :file | file filename = fileName ]
 		  ifFound: [ :file | file id ]
 		  ifNone: [ 
-		  filesAPIClient idForProcessed: aFileReference intendedFor: aPurpose waiting: 4 seconds ]
+		  filesAPIClient idForProcessed: aFileReference intendedFor: aPurpose waiting: 20 seconds ]
 ]
 
 { #category : #accessing }
