@@ -177,13 +177,19 @@ OpenAIExamples >> completionsAPIClient [
 ]
 
 { #category : #'private - processing' }
+OpenAIExamples >> convertToLinuxLineEndings: aString [
+
+	^ ( aString copyReplaceAll: String crlf with: String lf ) copyReplaceAll: String cr with: String lf
+]
+
+{ #category : #'private - processing' }
 OpenAIExamples >> createAnswersExampleFile [
 
-	self answersExampleFileReference writeStreamDo: [ :stream | 
-		stream nextPutAll: '{"text": "France is in Europe", "metadata": "country with french people"}
+	self
+		write: '{"text": "France is in Europe", "metadata": "country with french people"}
 {"text": "Canada is in America", "metadata": "country with canadian people"}
 {"text": "Japan is in Asia", "metadata": "country with japanese people"}'
-		]
+		to: self answersExampleFileReference
 ]
 
 { #category : #'private - processing' }
@@ -192,8 +198,7 @@ OpenAIExamples >> createClassificationsExampleFile [
 	self classificationsExampleFileReference writeStreamDo: [ :stream | 
 		stream nextPutAll:
 			'{"text": "good film, but very glum.", "label": "Positive", "metadata": {"source":"example.com"}}
-{"text": "i sympathize with the plight of these families, but the movie doesn''t do a very good job conveying the issue at hand.", "label": "Negative", "metadata": {"source":"example.com"}}
-'
+{"text": "i sympathize with the plight of these families, but the movie doesn''t do a very good job conveying the issue at hand.", "label": "Negative", "metadata": {"source":"example.com"}}'
 		]
 ]
 
@@ -226,7 +231,7 @@ OpenAIExamples >> createSearchExampleFile [
 {"text": "a car is loud", "metadata": "a type of vehicle"}
 {"text": "a building is tall", "metadata": "a type of location"}
 {"text": "a vehicle is fast", "metadata": "a type of transport"}
-{"text": "a person is smart", "metadata": "a type of sentient being"}      '
+{"text": "a person is smart", "metadata": "a type of sentient being"}'
 		]
 ]
 
@@ -378,4 +383,11 @@ OpenAIExamples >> searchFromFile [
 OpenAIExamples >> sortByScoreDataIn: response [
 
 	^ ( response at: 'data' ) sorted: [ :a :b | ( a at: 'score' ) >= ( b at: 'score' ) ]
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> write: aString to: aFileReference [
+
+	aFileReference writeStreamDo: [ :stream | 
+		stream nextPutAll: ( self convertToLinuxLineEndings: aString ) ]
 ]
