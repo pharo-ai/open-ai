@@ -35,9 +35,15 @@ OpenAIExamples >> answersAPIClient [
 ]
 
 { #category : #'private - accessing' }
+OpenAIExamples >> answersExampleFileReference [
+
+	^ self examplesDirectory / 'answers-example.jsonl'
+]
+
+{ #category : #'private - accessing' }
 OpenAIExamples >> answersFileId [
 
-	^ self idForFileNamed: 'open-ai/answers-example.jsonl' intendedFor: 'answers'
+	^ self idForFileNamed: self answersExampleFileReference intendedFor: 'answers'
 ]
 
 { #category : #accessing }
@@ -96,9 +102,15 @@ OpenAIExamples >> classificationsAPIClient [
 ]
 
 { #category : #'private - accessing' }
+OpenAIExamples >> classificationsExampleFileReference [
+
+	^ self examplesDirectory / 'classifications-example.jsonl'
+]
+
+{ #category : #'private - accessing' }
 OpenAIExamples >> classificationsFileId [
 
-	^ self idForFileNamed: 'open-ai/classifications-example.jsonl' intendedFor: 'classifications'
+	^ self idForFileNamed: self classificationsExampleFileReference intendedFor: 'classifications'
 ]
 
 { #category : #accessing }
@@ -164,6 +176,60 @@ OpenAIExamples >> completionsAPIClient [
 	^ apiClient
 ]
 
+{ #category : #'private - processing' }
+OpenAIExamples >> createAnswersExampleFile [
+
+	self answersExampleFileReference writeStreamDo: [ :stream | 
+		stream nextPutAll: '{"text": "France is in Europe", "metadata": "country with french people"}
+{"text": "Canada is in America", "metadata": "country with canadian people"}
+{"text": "Japan is in Asia", "metadata": "country with japanese people"}'
+		]
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> createClassificationsExampleFile [
+
+	self classificationsExampleFileReference writeStreamDo: [ :stream | 
+		stream nextPutAll:
+			'{"text": "good film, but very glum.", "label": "Positive", "metadata": {"source":"example.com"}}
+{"text": "i sympathize with the plight of these families, but the movie doesn''t do a very good job conveying the issue at hand.", "label": "Negative", "metadata": {"source":"example.com"}}
+'
+		]
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> createExamplesDirectory [
+
+	self examplesDirectory createDirectory
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> createFileThatWillBeDeleted [
+
+	self fileThatWillBeDeletedReference writeStreamDo: [ :stream | 
+		stream nextPutAll: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}' ]
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> createFineTuneExampleFile [
+
+	self fineTuneExampleFileReference writeStreamDo: [ :stream | 
+		stream nextPutAll: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}' ]
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> createSearchExampleFile [
+
+	self searchExampleFileReference writeStreamDo: [ :stream | 
+		stream nextPutAll: '{"text": "a cat is happy", "metadata": "a type of feline"}
+{"text": "a dog is hungry", "metadata": "a type of canine"}
+{"text": "a car is loud", "metadata": "a type of vehicle"}
+{"text": "a building is tall", "metadata": "a type of location"}
+{"text": "a vehicle is fast", "metadata": "a type of transport"}
+{"text": "a person is smart", "metadata": "a type of sentient being"}      '
+		]
+]
+
 { #category : #accessing }
 OpenAIExamples >> deleteAllFiles [
 
@@ -183,8 +249,20 @@ OpenAIExamples >> downloadAndRemoveFile [
 
 	| id |
 
-	id := self idForFileNamed: 'open-ai/file-that-will-be-deleted.jsonl' intendedFor: 'fine-tune'.
+	id := self idForFileNamed: self fileThatWillBeDeletedReference intendedFor: 'fine-tune'.
 	^ self filesAPIClient removeFileIdentifiedBy: id
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> examplesDirectory [
+
+	^ 'open-ai' asFileReference
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> fileThatWillBeDeletedReference [
+
+	^ self examplesDirectory / 'file-that-will-be-deleted.jsonl'
 ]
 
 { #category : #accessing }
@@ -197,7 +275,7 @@ OpenAIExamples >> files [
 	^ files data
 		  ifEmpty: [ 
 			  Array with: ( apiClient
-					    idForProcessed: 'open-ai/fine-tune-example.jsonl' asFileReference
+					    idForProcessed: self fineTuneExampleFileReference
 					    intendedFor: 'fine-tune'
 					    waiting: 4 seconds )
 			  ]
@@ -213,19 +291,36 @@ OpenAIExamples >> filesAPIClient [
 ]
 
 { #category : #'private - accessing' }
-OpenAIExamples >> idForFileNamed: aName intendedFor: aPurpose [
+OpenAIExamples >> fineTuneExampleFileReference [
+
+	^ self examplesDirectory / 'fine-tune-example.jsonl'
+]
+
+{ #category : #processing }
+OpenAIExamples >> generateExampleFiles [
+
+	self createExamplesDirectory.
+	self createAnswersExampleFile.
+	self createClassificationsExampleFile.
+	self createFileThatWillBeDeleted.
+	self createFineTuneExampleFile.
+	self createSearchExampleFile
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> idForFileNamed: aFileReference intendedFor: aPurpose [
 
 	| fileName filesAPIClient files |
 
-	fileName := aName asFileReference basename.
+	fileName := aFileReference basename.
 	filesAPIClient := self filesAPIClient.
 	files := filesAPIClient listFiles.
-	
+
 	^ files data
 		  detect: [ :file | file filename = fileName ]
 		  ifFound: [ :file | file id ]
 		  ifNone: [ 
-		  filesAPIClient idForProcessed: aName asFileReference intendedFor: aPurpose waiting: 4 seconds ]
+		  filesAPIClient idForProcessed: aFileReference intendedFor: aPurpose waiting: 4 seconds ]
 ]
 
 { #category : #accessing }
@@ -254,9 +349,15 @@ OpenAIExamples >> searchAPIClient [
 ]
 
 { #category : #'private - accessing' }
+OpenAIExamples >> searchExampleFileReference [
+
+	^ self examplesDirectory / 'search-example.jsonl'
+]
+
+{ #category : #'private - accessing' }
 OpenAIExamples >> searchFileId [
 
-	^ self idForFileNamed: 'open-ai/search-example.jsonl' intendedFor: 'search'
+	^ self idForFileNamed: self searchExampleFileReference intendedFor: 'search'
 ]
 
 { #category : #accessing }
