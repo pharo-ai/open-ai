@@ -56,7 +56,7 @@ There is no cost associated with managing files.
 This means that running the examples in this section will not reduce
 your free balance.
 
-Files are uploaded asynchronously. 
+Files are uploaded asynchronously.
 Uploading returns a *File ID* than can be used later to check the file status.
 You can't use a file until it's status is **processed**.
 
