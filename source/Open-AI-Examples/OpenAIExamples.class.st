@@ -78,10 +78,10 @@ OpenAIExamples >> classifications [
 
 	apiClient := self classificationsAPIClient.
 	apiClient labelAsOneOf: #( 'happy' 'sad' ).
-	
+
 	response := apiClient classify: 'the weather is great' given: ( Array
 			              with: #( 'the grass is green' 'happy' )
-			              with: #( 'el cielo está lindo' 'happy' )
+			              with: #( 'the sky is pretty' 'happy' )
 			              with: #( 'the soil is rotten' 'sad' ) ).
 	^ response at: 'label'
 ]
