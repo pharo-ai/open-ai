@@ -15,7 +15,7 @@ You should be able to obtain an API Key by following the [steps mentioned here](
 Afterwards you can access the key by sending
 `'open-ai/apikey.secret' asFileReference contents`.
 
-So to create the Files API Client we can evaluate:
+So to create the Files API Client you can evaluate:
 
 ```smalltalk
 | restfulClient apiKey filesAPIClient |
@@ -46,7 +46,7 @@ To use it, just evaluate:
 filesAPIClient listFiles
 ```
 
-### wait: aTime forProcessingOf: aFileId thenDo: aBlock
+### idForProcessed: *file reference* intendedFor: *purpose* waiting: *time*
 
 Executes a POST call to upload a file. This requires,
 apart from the reference to the desired file,
@@ -81,7 +81,7 @@ apiClient
     waiting: 4 seconds
 ```
 
-### retrieveFileIdentifiedBy: aFileId
+### retrieveFileIdentifiedBy: *file id*
 
 Executes a DELETE request, to remove from your storage
 the file with the *id* indicated.
