@@ -89,12 +89,12 @@ SearchAPIClientTest >> restfulAPIClient [
 ]
 
 { #category : #tests }
-SearchAPIClientTest >> testChangeEngineTo [
+SearchAPIClientTest >> testChangeModelTo [
 
 	| client url |
 
 	client := SearchAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
-	client changeEngineTo: 'davinci'.
+	client changeModelTo: 'davinci'.
 	self httpClient whenSend: #url: evaluate: [ :urlReceived | url := urlReceived ].
 
 	self configureHttpClientToRespondWith: self dogResponseFromDocuments.

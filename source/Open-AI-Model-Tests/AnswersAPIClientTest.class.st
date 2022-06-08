@@ -110,12 +110,12 @@ AnswersAPIClientTest >> testAnswerQueryingGivenWithin [
 ]
 
 { #category : #tests }
-AnswersAPIClientTest >> testChangeEngineTo [
+AnswersAPIClientTest >> testChangeModelTo [
 
 	| client entityContentsJSON |
 
 	client := AnswersAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
-	client changeEngineTo: 'davinci'.
+	client changeModelTo: 'davinci'.
 	self httpClient
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 

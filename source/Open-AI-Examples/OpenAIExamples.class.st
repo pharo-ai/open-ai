@@ -27,7 +27,7 @@ OpenAIExamples >> answersAPIClient [
 		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
 		             authenticatedWith: self apiKey.
 	apiClient
-		changeEngineTo: 'ada';
+		changeModelTo: 'ada';
 		changeSearchEngineTo: 'ada';
 		stopAt: #( '\n' '<|endoftext|>' ).
 
@@ -95,7 +95,7 @@ OpenAIExamples >> classificationsAPIClient [
 		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
 		             authenticatedWith: self apiKey.
 	apiClient
-		changeEngineTo: 'ada';
+		changeModelTo: 'ada';
 		changeSearchEngineTo: 'ada'.
 
 	^ apiClient
@@ -171,7 +171,7 @@ OpenAIExamples >> completionsAPIClient [
 	apiClient := CompletionsAPIClient
 		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
 		             authenticatedWith: self apiKey.
-	apiClient changeEngineTo: 'ada'.
+	apiClient changeModelTo: 'ada'.
 
 	^ apiClient
 ]
@@ -350,7 +350,7 @@ OpenAIExamples >> searchAPIClient [
 	apiClient := SearchAPIClient
 		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
 		             authenticatedWith: self apiKey.
-	apiClient changeEngineTo: 'ada'.
+	apiClient changeModelTo: 'ada'.
 
 	^ apiClient
 ]

@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : #configuring }
-SearchAPIClient >> changeEngineTo: anEngineId [
+SearchAPIClient >> changeModelTo: anEngineId [
 
 	"https://beta.openai.com/docs/engines
 Davinci - $0.0600 per 1K tokens - Good at: Complex intent, cause and effect, summarization for audience
@@ -43,7 +43,7 @@ SearchAPIClient >> initializeAccessingAPIsWith: apiClient authenticatedWith: anA
 	parametersTemplate := Dictionary new.
 	
 	"Defaulting to the cheapest model"
-	self changeEngineTo: 'ada'.
+	self changeModelTo: 'ada'.
 ]
 
 { #category : #configuring }

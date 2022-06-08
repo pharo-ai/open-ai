@@ -48,7 +48,7 @@ AnswersAPIClient >> answersParametersToAnswer: aQuestion querying: aFileId given
 ]
 
 { #category : #configuring }
-AnswersAPIClient >> changeEngineTo: anEngineId [
+AnswersAPIClient >> changeModelTo: anEngineId [
 
 	"https://beta.openai.com/docs/engines
 Davinci - $0.0600 per 1K tokens - Good at: Complex intent, cause and effect, summarization for audience
@@ -93,7 +93,7 @@ AnswersAPIClient >> initializeAccessingAPIsWith: apiClient authenticatedWith: an
 	parametersTemplate := Dictionary new.
 
 	"Defaulting to the cheapest model"
-	self changeEngineTo: 'ada'.
+	self changeModelTo: 'ada'.
 	self changeSearchEngineTo: 'ada'
 ]
 
