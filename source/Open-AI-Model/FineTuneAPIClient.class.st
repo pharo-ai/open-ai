@@ -87,9 +87,10 @@ FineTuneAPIClient >> initializeAccessingAPIsWith: apiClient authenticatedWith: a
 { #category : #processing }
 FineTuneAPIClient >> listFineTunes [
 
-	^ client getAt: self serviceUrl
+	^ client
+		  getAt: self serviceUrl
 		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
-		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
+		  withSuccessfulResponseDo: [ :response | ( NeoJSONObject fromString: response ) data ]
 ]
 
 { #category : #processing }

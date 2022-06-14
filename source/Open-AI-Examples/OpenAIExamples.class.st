@@ -183,6 +183,22 @@ OpenAIExamples >> classificationsFromFileWithoutLabels [
 ]
 
 { #category : #'private - accessing' }
+OpenAIExamples >> classifyUsing: aFineTune [
+
+	| apiClient seedText response |
+
+	apiClient := self completionsAPIClient.
+	apiClient
+		changeModelTo: ( aFineTune at: #fine_tuned_model );
+		changeMaximumNumberOfTokensTo: 1.
+	seedText := 'https://t.co/f93xEd2 Excited to share my latest blog post! ->'.
+
+	response := apiClient complete: seedText.
+
+	^ ( ( ( response at: 'choices' ) detect: [ :choice | choice index = 0 ] ) at: 'text' ) trimBoth
+]
+
+{ #category : #'private - accessing' }
 OpenAIExamples >> cleanDelimitersFrom: anAnswerCollection [
 
 	^ anAnswerCollection collect: [ :answer | ( answer substrings: '===' ) first trimBoth ]
@@ -296,7 +312,7 @@ OpenAIExamples >> deleteAllFineTunes [
 	| apiClient |
 
 	apiClient := self fineTuneAPIClient.
-	^ apiClient listFineTunes data collect: [ :fineTune | 
+	^ apiClient listFineTunes collect: [ :fineTune | 
 		  | modelName |
 
 		  "fine_tuned_model returns null/nil until processing is completed"
@@ -357,28 +373,6 @@ OpenAIExamples >> filesAPIClient [
 		  authenticatedWith: self apiKey
 ]
 
-{ #category : #accessing }
-OpenAIExamples >> fineTune [
-
-	| fileId fineTuneId apiClient modelName |
-
-	fileId := self fineTuneFileId.
-
-	apiClient := self fineTuneAPIClient.
-	apiClient
-		changeModelTo: 'curie';
-	"  changeNumberOfClassesTo: 2;
-		computeClassificationMetrics; "
-		changeSuffixTo: 'example'.
-
-	fineTuneId := ( apiClient trainUsing: fileId ) id.
-	modelName := self
-		             wait: 5 minutes
-		             for: apiClient
-		             toTrain: fineTuneId
-		             thenDo: [ :fineTune | fineTune inspect ]
-]
-
 { #category : #'private - accessing' }
 OpenAIExamples >> fineTuneAPIClient [
 
@@ -402,6 +396,29 @@ OpenAIExamples >> fineTuneExampleFileReference [
 OpenAIExamples >> fineTuneFileId [
 
 	^ self idForFileNamed: self fineTuneExampleFileReference intendedFor: 'fine-tune'
+]
+
+{ #category : #accessing }
+OpenAIExamples >> fineTunedSentimentAnalysis [
+
+	| apiClient fineTunes |
+
+	apiClient := self fineTuneAPIClient.
+	fineTunes := apiClient listFineTunes.
+	fineTunes ifEmpty: [ 
+		self prepareExampleFineTune.
+		'No fine tune has been requested so far. A new job has been launched. Wait a few minutes, then try again.'
+			inspect
+		].
+
+	fineTunes := fineTunes select: [ :fineTune | fineTune status = 'succeeded' ].
+	fineTunes ifEmpty: [ 
+		'No fine tune was ready for use yet. Wait a few minutes, then try again ' inspect ].
+
+	fineTunes := fineTunes sorted: [ :a :b | 
+		             ( a at: #fine_tuned_model ) >= ( b at: #fine_tuned_model ) ].
+
+	^ self classifyUsing: fineTunes first
 ]
 
 { #category : #processing }
@@ -429,6 +446,21 @@ OpenAIExamples >> idForFileNamed: aFileReference intendedFor: aPurpose [
 		  ifFound: [ :file | file id ]
 		  ifNone: [ 
 		  filesAPIClient idForProcessed: aFileReference intendedFor: aPurpose waiting: 20 seconds ]
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> prepareExampleFineTune [
+
+	| fileId apiClient |
+
+	fileId := self fineTuneFileId.
+
+	apiClient := self fineTuneAPIClient.
+	apiClient
+		changeModelTo: 'curie';
+		changeSuffixTo: 'example'.
+
+	apiClient trainUsing: fileId
 ]
 
 { #category : #accessing }
@@ -536,26 +568,6 @@ Bond tweets:'.
 	response := apiClient complete: seedText.
 
 	^ ( response at: 'choices' ) first at: 'text'
-]
-
-{ #category : #'private - processing' }
-OpenAIExamples >> wait: aTime for: anAPIClient toTrain: aFineTuneId thenDo: aBlock [
-
-	| fineTune wasProcessed |
-
-	wasProcessed := Retry
-		                value: [ 
-			                fineTune := anAPIClient retrieveFineTuneIdentifiedBy: aFineTuneId.
-			                fineTune status = 'succeeded'
-			                ]
-		                configuredBy: [ :retry | 
-			                retry
-				                when: [ :alreadyProcessed | alreadyProcessed not ];
-				                upTo: aTime minutes timesEvery: 1 minute
-			                ].
-	^ wasProcessed
-		  ifTrue: [ aBlock cull: fineTune ]
-		  ifFalse: [ Error signal: 'Took too long to process, try again later' ]
 ]
 
 { #category : #'private - processing' }
