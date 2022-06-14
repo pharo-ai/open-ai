@@ -73,6 +73,25 @@ FilesAPIClientTest >> restfulAPIClient [
 ]
 
 { #category : #tests }
+FilesAPIClientTest >> testDeleteFileIdentifiedBy [
+
+	| client answerJSON url |
+
+	client := FilesAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
+	self httpClient whenSend: #url: evaluate: [ :urlReceived | url := urlReceived ].
+	self configureHttpClientToRespondWith: self deleteResponse.
+
+	answerJSON := client deleteFileIdentifiedBy: 'fileID'.
+
+	self
+		assert: answerJSON object equals: 'file';
+		assert: answerJSON deleted;
+		assert: answerJSON id equals: 'fileID'.
+
+	self assert: url equals: 'https://api.openai.com/v1/files/fileID' asUrl
+]
+
+{ #category : #tests }
 FilesAPIClientTest >> testIdForProcessedIntendedForWaiting [
 
 	| client parts fileReference |
@@ -125,25 +144,6 @@ FilesAPIClientTest >> testListFiles [
 			assert: ( item at: #created_at ) strictlyPositive;
 			assert: ( item at: #status_details ) isNil
 		]
-]
-
-{ #category : #tests }
-FilesAPIClientTest >> testRemoveFileIdentifiedBy [
-
-	| client answerJSON url |
-
-	client := FilesAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
-	self httpClient whenSend: #url: evaluate: [ :urlReceived | url := urlReceived ].
-	self configureHttpClientToRespondWith: self deleteResponse.
-
-	answerJSON := client removeFileIdentifiedBy: 'fileID'.
-
-	self
-		assert: answerJSON object equals: 'file';
-		assert: answerJSON deleted;
-		assert: answerJSON id equals: 'fileID'.
-
-	self assert: url equals: 'https://api.openai.com/v1/files/fileID' asUrl
 ]
 
 { #category : #private }

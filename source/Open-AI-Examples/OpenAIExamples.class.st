@@ -5,6 +5,32 @@ Class {
 }
 
 { #category : #accessing }
+OpenAIExamples >> advancedTweetClassificationViaCompletion [
+
+	| apiClient seedText response |
+
+	"https://beta.openai.com/examples/default-adv-tweet-classifier"
+	apiClient := self completionsAPIClient.
+	apiClient
+		changeMaximumNumberOfTokensTo: 60;
+		changeModelTo: 'text-davinci-002';
+		changeTemperatureTo: 0.
+	seedText := 'Classify the sentiment in these tweets:
+
+1. "I can''t stand homework"
+2. "This sucks. I''m bored 😠"
+3. "I can''t wait for Halloween!!!"
+4. "My cat is adorable ❤️❤️"
+5. "I hate chocolate"
+
+Tweet sentiment ratings:'.
+
+	response := apiClient complete: seedText.
+
+	^ '<1s><2s>' expandMacrosWith: seedText with: ( ( response at: 'choices' ) first at: 'text' )
+]
+
+{ #category : #accessing }
 OpenAIExamples >> answers [
 
 	| response |
@@ -69,6 +95,19 @@ OpenAIExamples >> answersFromFile [
 OpenAIExamples >> apiKey [
 
 	^ 'open-ai/apikey.secret' asFileReference contents
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> ask: apiClient toDelete: modelName relatedTo: fineTune [
+
+	^ [ apiClient deleteFineTuneNamed: modelName ]
+		  on: HTTPClientError notFound
+		  do: [ :ex | 
+			  ex return:
+				  ( 'The model <1s> has already been deleted but the related fine tune <2s> is still listed, it should be purged eventually by Open AI'
+					    expandMacrosWith: modelName
+					    with: fineTune id )
+			  ]
 ]
 
 { #category : #accessing }
@@ -220,7 +259,8 @@ OpenAIExamples >> createFileThatWillBeDeleted [
 OpenAIExamples >> createFineTuneExampleFile [
 
 	self
-		write: '{"prompt": "<prompt text>", "completion": "<ideal generated text>"}'
+		write: '{"prompt":"Overjoyed with the new iPhone! ->", "completion":" positive"}
+{"prompt":"@lakers disappoint for a third straight night https://t.co/38EFe43 ->", "completion":" negative"}'
 		to: self fineTuneExampleFileReference
 ]
 
@@ -245,11 +285,31 @@ OpenAIExamples >> deleteAllFiles [
 	| apiClient |
 
 	apiClient := self filesAPIClient.
-	^ apiClient listFiles data collect: [ :file | apiClient removeFileIdentifiedBy: file id ]
+	^ apiClient listFiles data collect: [ :file | apiClient deleteFileIdentifiedBy: file id ]
 ]
 
 { #category : #accessing }
-OpenAIExamples >> downloadAndRemoveFile [
+OpenAIExamples >> deleteAllFineTunes [
+
+	"Use with extreme caution!"
+
+	| apiClient |
+
+	apiClient := self fineTuneAPIClient.
+	^ apiClient listFineTunes data collect: [ :fineTune | 
+		  | modelName |
+
+		  "fine_tuned_model returns null/nil until processing is completed"
+		  modelName := fineTune at: #fine_tuned_model.
+
+		  modelName
+			  ifNil: [ apiClient cancelFineTuneIdentifiedBy: fineTune id ]
+			  ifNotNil: [ self ask: apiClient toDelete: modelName relatedTo: fineTune ]
+		  ]
+]
+
+{ #category : #accessing }
+OpenAIExamples >> downloadAndDeleteFile [
 
 	"All attempts at downloading give the same 400 error:
 	Not allowed to download files of purpose: <THE PURPOSE SENT>"
@@ -257,7 +317,7 @@ OpenAIExamples >> downloadAndRemoveFile [
 	| id |
 
 	id := self idForFileNamed: self fileThatWillBeDeletedReference intendedFor: 'fine-tune'.
-	^ self filesAPIClient removeFileIdentifiedBy: id
+	^ self filesAPIClient deleteFileIdentifiedBy: id
 ]
 
 { #category : #'private - accessing' }
@@ -297,10 +357,51 @@ OpenAIExamples >> filesAPIClient [
 		  authenticatedWith: self apiKey
 ]
 
+{ #category : #accessing }
+OpenAIExamples >> fineTune [
+
+	| fileId fineTuneId apiClient modelName |
+
+	fileId := self fineTuneFileId.
+
+	apiClient := self fineTuneAPIClient.
+	apiClient
+		changeModelTo: 'curie';
+	"  changeNumberOfClassesTo: 2;
+		computeClassificationMetrics; "
+		changeSuffixTo: 'example'.
+
+	fineTuneId := ( apiClient trainUsing: fileId ) id.
+	modelName := self
+		             wait: 5 minutes
+		             for: apiClient
+		             toTrain: fineTuneId
+		             thenDo: [ :fineTune | fineTune inspect ]
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> fineTuneAPIClient [
+
+	| apiClient |
+
+	apiClient := FineTuneAPIClient
+		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		             authenticatedWith: self apiKey.
+	apiClient changeModelTo: 'ada'.
+
+	^ apiClient
+]
+
 { #category : #'private - accessing' }
 OpenAIExamples >> fineTuneExampleFileReference [
 
 	^ self examplesDirectory / 'fine-tune-example.jsonl'
+]
+
+{ #category : #'private - accessing' }
+OpenAIExamples >> fineTuneFileId [
+
+	^ self idForFileNamed: self fineTuneExampleFileReference intendedFor: 'fine-tune'
 ]
 
 { #category : #processing }
@@ -385,6 +486,76 @@ OpenAIExamples >> searchFromFile [
 OpenAIExamples >> sortByScoreDataIn: response [
 
 	^ ( response at: 'data' ) sorted: [ :a :b | ( a at: 'score' ) >= ( b at: 'score' ) ]
+]
+
+{ #category : #accessing }
+OpenAIExamples >> spanishBondTweetClassificationViaCompletion [
+
+	| apiClient seedText response |
+
+	apiClient := self completionsAPIClient.
+	apiClient
+		changeMaximumNumberOfTokensTo: 60;
+		changeModelTo: 'text-davinci-002';
+		changeTemperatureTo: 0.
+	seedText := 'Classify the sentiment in these tweets:
+
+1. "Si, prefiero opciones con más cupón. AE38, AL41 y los 2037 de PBA mis preferidos. Igual si la cosa va bien los de mayor apreciación van a ser los bonos cortos (#TARGET y #AL30). Obviamente lo mismo para sus equivalentes ley NY."
+2. "q feo ese $TARGET, lo conozco?"
+3. "#AL30D $TARGET vuela"
+4. "Que mejor manera de arrancar las vacaciones que el norte en máximos y el TARGET subiendo por sexta jornada seguida"
+5. "Mi hijo solo salió a comprar TARGET como todos los días y me lo fundieron. La madre de un trader fundido pide justicia."
+
+Tweet sentiment ratings:'.
+
+	response := apiClient complete: seedText.
+
+	^ '<1s><2s>' expandMacrosWith: seedText with: ( ( response at: 'choices' ) first at: 'text' )
+]
+
+{ #category : #accessing }
+OpenAIExamples >> tweetsInSpanishReferringToBonds [
+
+	| apiClient seedText response |
+
+	apiClient := self completionsAPIClient.
+	apiClient
+		changeMaximumNumberOfTokensTo: 60;
+		changeModelTo: 'text-davinci-002';
+		changeTemperatureTo: 0.
+	seedText := 'Determine which of these tweets refer to financial bonds:
+
+1. "Borrachita al29%"
+2. "Pero no paga nada de cupón. Es como una acción. Cómo ves el AE38 o el AL41?"
+3. "#dolar AL30(ci) MEP 190.71 Cable 189.97 GD30(ci) MEP 190.76 Cable 190.09 (BM+LELIQ+Pases)/Reservas al 29/03 196.24 Nación +30% +35% 192.64"
+4. "Buena semana para los D después de mucho tiempo!! El #AL30 que la semana pasada tocó los 27 y una tir de 30,8%, cierra en 30,7 y 28,5%!"
+5. "Este medio periodístico..... Es una farza.... Esta. Asustados porque petro no llega al30% de votos"
+
+Bond tweets:'.
+
+	response := apiClient complete: seedText.
+
+	^ ( response at: 'choices' ) first at: 'text'
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> wait: aTime for: anAPIClient toTrain: aFineTuneId thenDo: aBlock [
+
+	| fineTune wasProcessed |
+
+	wasProcessed := Retry
+		                value: [ 
+			                fineTune := anAPIClient retrieveFineTuneIdentifiedBy: aFineTuneId.
+			                fineTune status = 'succeeded'
+			                ]
+		                configuredBy: [ :retry | 
+			                retry
+				                when: [ :alreadyProcessed | alreadyProcessed not ];
+				                upTo: aTime minutes timesEvery: 1 minute
+			                ].
+	^ wasProcessed
+		  ifTrue: [ aBlock cull: fineTune ]
+		  ifFalse: [ Error signal: 'Took too long to process, try again later' ]
 ]
 
 { #category : #'private - processing' }
