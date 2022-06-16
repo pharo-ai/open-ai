@@ -71,14 +71,14 @@ ClassificationsAPIClientTest >> restfulAPIClient [
 ]
 
 { #category : #tests }
-ClassificationsAPIClientTest >> testChangeEngineTo [
+ClassificationsAPIClientTest >> testChangeModelTo [
 
 	| client entityContentsJSON |
 
 	client := ClassificationsAPIClient
 		          accessingAPIsWith: self restfulAPIClient
 		          authenticatedWith: '1234'.
-	client changeEngineTo: 'davinci'.
+	client changeModelTo: 'davinci'.
 	self httpClient
 		whenSend: #entity:
 		evaluate: [ :entityReceived | 

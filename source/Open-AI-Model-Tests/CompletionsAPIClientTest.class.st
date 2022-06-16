@@ -13,21 +13,6 @@ CompletionsAPIClientTest >> restfulAPIClient [
 ]
 
 { #category : #tests }
-CompletionsAPIClientTest >> testChangeEngineTo [
-
-	| client url |
-
-	client := CompletionsAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
-	client changeEngineTo: 'davinci'.
-	self httpClient whenSend: #url: evaluate: [ :urlReceived | url := urlReceived ].
-	self configureHttpClientToRespondWith: self thatResponse.
-
-	client complete: 'This is the day'.
-
-	self assert: url equals: 'https://api.openai.com/v1/engines/davinci/completions' asUrl
-]
-
-{ #category : #tests }
 CompletionsAPIClientTest >> testChangeMaximumNumberOfTokensTo [
 
 	| client entityContentsJSON |
@@ -44,7 +29,31 @@ CompletionsAPIClientTest >> testChangeMaximumNumberOfTokensTo [
 	self
 		assert: entityContentsJSON prompt equals: 'This is the day';
 		assert: ( entityContentsJSON at: #max_tokens ) equals: 10;
-		assert: entityContentsJSON keys size equals: 2
+		assert: entityContentsJSON model equals: 'text-ada-001';
+		assert: entityContentsJSON keys size equals: 3
+]
+
+{ #category : #tests }
+CompletionsAPIClientTest >> testChangeModelTo [
+
+	| client entityContentsJSON |
+
+	client := CompletionsAPIClient accessingAPIsWith: self restfulAPIClient authenticatedWith: '1234'.
+	client changeModelTo: 'davinci'.
+
+	self httpClient
+		whenSend: #entity:
+		evaluate: [ :entityReceived | 
+		entityContentsJSON := NeoJSONObject fromString: entityReceived contents ].
+	self configureHttpClientToRespondWith: self thatResponse.
+
+	client complete: 'This is the day'.
+
+	self
+		assert: entityContentsJSON prompt equals: 'This is the day';
+		assert: ( entityContentsJSON at: #max_tokens ) equals: 1;
+		assert: entityContentsJSON model equals: 'davinci';
+		assert: entityContentsJSON keys size equals: 3
 ]
 
 { #category : #tests }
@@ -85,7 +94,8 @@ CompletionsAPIClientTest >> testDefaultEntity [
 	self
 		assert: entityContentsJSON prompt equals: 'This is the day';
 		assert: ( entityContentsJSON at: #max_tokens ) equals: 1;
-		assert: entityContentsJSON keys size equals: 2
+		assert: entityContentsJSON model equals: 'text-ada-001';
+		assert: entityContentsJSON keys size equals: 3
 ]
 
 { #category : #tests }
@@ -99,7 +109,7 @@ CompletionsAPIClientTest >> testDefaultUrl [
 
 	client complete: 'This is the day'.
 
-	self assert: url equals: 'https://api.openai.com/v1/engines/ada/completions' asUrl
+	self assert: url equals: 'https://api.openai.com/v1/completions' asUrl
 ]
 
 { #category : #private }

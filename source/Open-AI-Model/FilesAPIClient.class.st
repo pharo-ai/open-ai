@@ -14,6 +14,14 @@ FilesAPIClient class >> initialize [
 	extensionsMap at: 'jsonl' ifAbsentPut: [ ZnMimeType applicationOctetStream ]
 ]
 
+{ #category : #processing }
+FilesAPIClient >> deleteFileIdentifiedBy: aFileId [
+
+	^ client deleteAt: self serviceUrl / aFileId
+		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
+		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
+]
+
 { #category : #'private - accessing' }
 FilesAPIClient >> endpoint [
 
@@ -34,14 +42,6 @@ FilesAPIClient >> idForProcessed: aFileReference intendedFor: aPurpose waiting: 
 FilesAPIClient >> listFiles [
 
 	^ client getAt: self serviceUrl
-		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
-		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
-]
-
-{ #category : #processing }
-FilesAPIClient >> removeFileIdentifiedBy: aFileId [
-
-	^ client deleteAt: self serviceUrl / aFileId
 		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
 		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
 ]
