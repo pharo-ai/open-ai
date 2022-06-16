@@ -60,10 +60,10 @@ FineTuneAPIClient >> computeClassificationMetrics [
 ]
 
 { #category : #processing }
-FineTuneAPIClient >> deleteFineTuneNamed: aFineTuneModel [
+FineTuneAPIClient >> deleteFineTunedModelNamed: aFineTunedModelName [
 
 	^ client
-		  deleteAt: self openAIUrl / 'models' / aFineTuneModel
+		  deleteAt: self modelsUrl / aFineTunedModelName
 		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
 		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
 ]
@@ -91,6 +91,21 @@ FineTuneAPIClient >> listFineTunes [
 		  getAt: self serviceUrl
 		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
 		  withSuccessfulResponseDo: [ :response | ( NeoJSONObject fromString: response ) data ]
+]
+
+{ #category : #processing }
+FineTuneAPIClient >> modelNamed: aFineTunedModelName [
+
+	^ client
+		  getAt: self modelsUrl / aFineTunedModelName
+		  configuredBy: [ :request | request headers setBearerTokenTo: apiKey ]
+		  withSuccessfulResponseDo: [ :response | NeoJSONObject fromString: response ]
+]
+
+{ #category : #'private - accessing' }
+FineTuneAPIClient >> modelsUrl [
+
+	^ self openAIUrl / 'models'
 ]
 
 { #category : #processing }

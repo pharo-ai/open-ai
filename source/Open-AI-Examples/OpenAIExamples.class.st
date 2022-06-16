@@ -98,13 +98,21 @@ OpenAIExamples >> apiKey [
 ]
 
 { #category : #'private - processing' }
+OpenAIExamples >> ask: apiClient toCancelFineTuneIdentifiedBy: fineTune [
+
+	^ fineTune status = 'cancelled'
+		  ifTrue: [ 'The fine tune <1s> has already been canceled.' expandMacrosWith: fineTune id ]
+		  ifFalse: [ apiClient cancelFineTuneIdentifiedBy: fineTune id ]
+]
+
+{ #category : #'private - processing' }
 OpenAIExamples >> ask: apiClient toDelete: modelName relatedTo: fineTune [
 
-	^ [ apiClient deleteFineTuneNamed: modelName ]
+	^ [ apiClient deleteFineTunedModelNamed: modelName ]
 		  on: HTTPClientError notFound
 		  do: [ :ex | 
 			  ex return:
-				  ( 'The model <1s> has already been deleted but the related fine tune <2s> is still listed, it should be purged eventually by Open AI'
+				  ( 'The model <1s> has already been deleted but the related fine tune <2s> is still listed, it should be purged eventually by Open AI.'
 					    expandMacrosWith: modelName
 					    with: fineTune id )
 			  ]
@@ -190,12 +198,23 @@ OpenAIExamples >> classifyUsing: aFineTune [
 	apiClient := self completionsAPIClient.
 	apiClient
 		changeModelTo: ( aFineTune at: #fine_tuned_model );
+		returnLikelyTokensUpTo: 2;
 		changeMaximumNumberOfTokensTo: 1.
 	seedText := 'https://t.co/f93xEd2 Excited to share my latest blog post! ->'.
 
 	response := apiClient complete: seedText.
 
 	^ ( ( ( response at: 'choices' ) detect: [ :choice | choice index = 0 ] ) at: 'text' ) trimBoth
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> classifyUsingNewestAmong: eligible [
+
+	| sorted |
+
+	sorted := eligible sorted: [ :a :b | ( a at: #fine_tuned_model ) >= ( b at: #fine_tuned_model ) ].
+
+	^ self classifyUsing: sorted first
 ]
 
 { #category : #'private - accessing' }
@@ -229,6 +248,21 @@ OpenAIExamples >> completionsAPIClient [
 	apiClient changeModelTo: 'ada'.
 
 	^ apiClient
+]
+
+{ #category : #'private - processing' }
+OpenAIExamples >> considerPreparingFineTuneExampleBasedOn: fineTunes [
+
+	| pending |
+
+	pending := fineTunes reject: [ :fineTune | #( succeeded cancelled ) includes: fineTune status ].
+
+	^ pending
+		  ifEmpty: [ 
+			  self prepareExampleFineTune.
+			  'No pending nor finished fine tune found. A new job has been launched. Wait a few minutes, then try again.'
+			  ]
+		  ifNotEmpty: [ 'No fine tune was ready for use yet. Wait a few minutes, then try again ' ]
 ]
 
 { #category : #'private - processing' }
@@ -319,9 +353,26 @@ OpenAIExamples >> deleteAllFineTunes [
 		  modelName := fineTune at: #fine_tuned_model.
 
 		  modelName
-			  ifNil: [ apiClient cancelFineTuneIdentifiedBy: fineTune id ]
+			  ifNil: [ self ask: apiClient toCancelFineTuneIdentifiedBy: fineTune ]
 			  ifNotNil: [ self ask: apiClient toDelete: modelName relatedTo: fineTune ]
 		  ]
+]
+
+{ #category : #'private - testing' }
+OpenAIExamples >> does: apiClient considerAsReady: fineTune [
+
+	^ fineTune status = 'succeeded' and: [ self does: apiClient knowAboutModelOf: fineTune ]
+]
+
+{ #category : #'private - testing' }
+OpenAIExamples >> does: apiClient knowAboutModelOf: fineTune [
+
+	^ [ 
+	  apiClient modelNamed: ( fineTune at: #fine_tuned_model ).
+	  true
+	  ]
+		  on: HTTPClientError notFound
+		  do: [ :ex | ex return: false ]
 ]
 
 { #category : #accessing }
@@ -376,14 +427,9 @@ OpenAIExamples >> filesAPIClient [
 { #category : #'private - accessing' }
 OpenAIExamples >> fineTuneAPIClient [
 
-	| apiClient |
-
-	apiClient := FineTuneAPIClient
-		             accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
-		             authenticatedWith: self apiKey.
-	apiClient changeModelTo: 'ada'.
-
-	^ apiClient
+	^ FineTuneAPIClient
+		  accessingAPIsWith: RESTfulAPIClient cachingOnLocalMemory
+		  authenticatedWith: self apiKey
 ]
 
 { #category : #'private - accessing' }
@@ -401,24 +447,17 @@ OpenAIExamples >> fineTuneFileId [
 { #category : #accessing }
 OpenAIExamples >> fineTunedSentimentAnalysis [
 
-	| apiClient fineTunes |
+	| apiClient fineTunes ready |
 
+	"The final result is answering https instead of a classification, most likely because there are only 2 examples instead of 200"
 	apiClient := self fineTuneAPIClient.
 	fineTunes := apiClient listFineTunes.
-	fineTunes ifEmpty: [ 
-		self prepareExampleFineTune.
-		'No fine tune has been requested so far. A new job has been launched. Wait a few minutes, then try again.'
-			inspect
-		].
 
-	fineTunes := fineTunes select: [ :fineTune | fineTune status = 'succeeded' ].
-	fineTunes ifEmpty: [ 
-		'No fine tune was ready for use yet. Wait a few minutes, then try again ' inspect ].
+	ready := fineTunes select: [ :fineTune | self does: apiClient considerAsReady: fineTune ].
 
-	fineTunes := fineTunes sorted: [ :a :b | 
-		             ( a at: #fine_tuned_model ) >= ( b at: #fine_tuned_model ) ].
-
-	^ self classifyUsing: fineTunes first
+	^ ready
+		  ifNotEmpty: [ self classifyUsingNewestAmong: ready ]
+		  ifEmpty: [ self considerPreparingFineTuneExampleBasedOn: fineTunes ]
 ]
 
 { #category : #processing }
@@ -456,9 +495,7 @@ OpenAIExamples >> prepareExampleFineTune [
 	fileId := self fineTuneFileId.
 
 	apiClient := self fineTuneAPIClient.
-	apiClient
-		changeModelTo: 'curie';
-		changeSuffixTo: 'example'.
+	apiClient changeSuffixTo: 'example'.
 
 	apiClient trainUsing: fileId
 ]
